@@ -5,6 +5,7 @@ using Hymnals.Services;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
+using Hymns_UWP.Helpers;
 
 namespace Hymnals
 {
@@ -33,6 +34,11 @@ namespace Hymnals
             {
                 await ActivationService.ActivateAsync(args);
             }
+
+            //Install DB files if absent
+            //(or update default DB if size no longer matches)
+            await DataFileUtility.InstallDatabasesAsync();
+
         }
 
         protected override async void OnActivated(IActivatedEventArgs args)
