@@ -1,7 +1,6 @@
-﻿using System;
-
+﻿using Hymnals.DataLayer;
 using Hymnals.ViewModels;
-
+using System.Linq;
 using Windows.UI.Xaml.Controls;
 
 namespace Hymnals.Views
@@ -16,6 +15,14 @@ namespace Hymnals.Views
         public HomePage()
         {
             InitializeComponent();
+        }
+
+        private void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            using (var db = new HymnalsContext())
+            {
+                Shelves.ItemsSource = db.Shelves.ToList();
+            }
         }
     }
 }
