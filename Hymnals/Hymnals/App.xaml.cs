@@ -1,17 +1,18 @@
-﻿using System;
-
+﻿using Hymnals.DataLayer;
 using Hymnals.Services;
-
+using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
-using Hymns_UWP.Helpers;
 
 namespace Hymnals
 {
     public sealed partial class App : Application
     {
         private Lazy<ActivationService> _activationService;
+
+        public static string DefaultDBName = "DefaultContent.db";
+        public static string UserDBName = "UserContent.db";
 
         private ActivationService ActivationService
         {
@@ -30,15 +31,12 @@ namespace Hymnals
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            await DataFileUtility.InstallDatabasesAsync();
+
             if (!args.PrelaunchActivated)
             {
                 await ActivationService.ActivateAsync(args);
             }
-
-            //Install DB files if absent
-            //(or update default DB if size no longer matches)
-            await DataFileUtility.InstallDatabasesAsync();
-
         }
 
         protected override async void OnActivated(IActivatedEventArgs args)

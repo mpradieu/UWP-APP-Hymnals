@@ -8,13 +8,16 @@ using Windows.ApplicationModel;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 
-namespace Hymns_UWP.Helpers
+namespace Hymnals.DataLayer
 {
     public static class DataFileUtility
     {
         // DB resources for shipped collections and for user-defined collections and other usage data
-        internal static string DefaultDBName = "DefaultContent.db";
-        internal static string UserDBName = "UserContent.db";
+
+
+        // now using global variables intead of these
+        //internal static string DefaultDBName = "DefaultContent.db";
+        //internal static string UserDBName = "UserContent.db";
 
         private static async Task<bool> DatabaseIsInstalledAsync(string dbName)
         {
@@ -23,7 +26,7 @@ namespace Hymns_UWP.Helpers
             try
             {
                 StorageFile DBFile = await ApplicationData.Current.LocalFolder.GetFileAsync(dbName);
-                IsInstalled = true;
+                 IsInstalled = true;
             }
             catch (FileNotFoundException e)
             {
@@ -45,10 +48,10 @@ namespace Hymns_UWP.Helpers
 
             try
             {
-                ResourceFile = await Package.Current.InstalledLocation.GetFileAsync(@"DataSource\" + DefaultDBName);
+                ResourceFile = await Package.Current.InstalledLocation.GetFileAsync(@"DataLayer\" + App.DefaultDBName);
                 NewDBSize = (await ResourceFile.GetBasicPropertiesAsync()).Size;
 
-                InstalledFile = await ApplicationData.Current.LocalFolder.GetFileAsync(DefaultDBName);
+                InstalledFile = await ApplicationData.Current.LocalFolder.GetFileAsync(App.DefaultDBName);
                 CurrentDBSize = (await InstalledFile.GetBasicPropertiesAsync()).Size;
 
                 DatabaseSizeHasChanged = NewDBSize != CurrentDBSize;
@@ -69,8 +72,14 @@ namespace Hymns_UWP.Helpers
 
             try
             {
-                ResourceFile = await Package.Current.InstalledLocation.GetFileAsync(@"DataSource\" + dbName);
+                ResourceFile = await Package.Current.InstalledLocation.GetFileAsync(@"DataLayer\" + dbName);
+                StorageFolder dest = ApplicationData.Current.LocalFolder;
                 await ResourceFile.CopyAsync(ApplicationData.Current.LocalFolder);
+
+                // DEBUG
+                //var instPath = ResourceFile.Path.ToString();
+                //App.ContentPath = instPath.Remove(instPath.LastIndexOf('\\')+1);
+                //App.ContentPath = dest.Path;
             }
             catch (Exception e)
             {
@@ -86,8 +95,8 @@ namespace Hymns_UWP.Helpers
 
             try
             {
-                ResourceFile = await Package.Current.InstalledLocation.GetFileAsync(@"DataSource\" + DefaultDBName);
-                await ResourceFile.CopyAsync(ApplicationData.Current.LocalFolder, DefaultDBName, NameCollisionOption.ReplaceExisting);
+                ResourceFile = await Package.Current.InstalledLocation.GetFileAsync(@"DataLayer\" + App.DefaultDBName);
+                await ResourceFile.CopyAsync(ApplicationData.Current.LocalFolder, App.DefaultDBName, NameCollisionOption.ReplaceExisting);
             }
             catch(Exception e)
             {
@@ -99,15 +108,15 @@ namespace Hymns_UWP.Helpers
 
         public static async Task InstallDatabasesAsync()
         {
-            bool DefaultDatabaseIsPresent = await DatabaseIsInstalledAsync(DefaultDBName);
-            bool UserDatabaseIsPresent = await DatabaseIsInstalledAsync(UserDBName);
+            bool DefaultDatabaseIsPresent = await DatabaseIsInstalledAsync(App.DefaultDBName);
+            bool UserDatabaseIsPresent = await DatabaseIsInstalledAsync(App.UserDBName);
             bool DatabaseSizeHasChanged;
 
             //If neither default nor user db is installed, copy both resources
             if (!DefaultDatabaseIsPresent && !UserDatabaseIsPresent)
             {
-                await CopyDatabaseAsync(DefaultDBName);
-                await CopyDatabaseAsync(UserDBName);
+                await CopyDatabaseAsync(App.DefaultDBName);
+                await CopyDatabaseAsync(App.UserDBName);
             }
 
             //Otherwise, they have already been installed, simply update default db if size has changed
